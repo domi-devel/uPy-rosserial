@@ -33,12 +33,12 @@ class NodeHandle(object):
     def __init__(self, serial_id=2, baudrate=115200, **kwargs):
 
         """
-		id: used for topics id (negotiation)
-		advertised_topics: manage already negotiated topics
-		subscribing_topics: topics to which will be subscribed are here
-		serial_id: uart id
-		baudrate: baudrate used for serial comm
-		"""
+        id: used for topics id (negotiation)
+        advertised_topics: manage already negotiated topics
+        subscribing_topics: topics to which will be subscribed are here
+        serial_id: uart id
+        baudrate: baudrate used for serial comm
+        """
         self.id = 101
         self.advertised_topics = dict()
         self.subscribing_topics = dict()
@@ -62,6 +62,9 @@ class NodeHandle(object):
             self.uart = m.UART(self.serial_id, self.baudrate)
             self.uart.init(self.baudrate, bits=8, parity=None, stop=1, txbuf=0)
 
+            while not self.uart.any():
+                sleep_ms(100)
+
         if sys.platform == "esp32":
             threading.start_new_thread(self._listen, ())
         else:
@@ -72,10 +75,10 @@ class NodeHandle(object):
     def _advertise_topic(self, topic_name, msg, endpoint, buffer_size):
 
         """
-		topic_name: eg. (Greet)
-		msg: message object
-		endpoint: corresponds to TopicInfo.msg typical topic id values
-		"""
+        topic_name: eg. (Greet)
+        msg: message object
+        endpoint: corresponds to TopicInfo.msg typical topic id values
+        """
         register = TopicInfo()
         register.topic_id = self.id
         register.topic_name = topic_name
@@ -167,7 +170,9 @@ class NodeHandle(object):
                                 # incoming object msg initialized
                                 msgobj = self.subscribing_topics.get(inid)[0]
                             except Exception:
-                                logging.info("TX request was made or got message from not available subscribed topic.")
+                                logging.info(
+                                    "TX request was made or got message from not available subscribed topic."
+                                )
                             # object sent to callback
                             callback = self.subscribing_topics.get(inid)[1]
                             fdata = msgobj()
@@ -183,8 +188,8 @@ class NodeHandle(object):
 # functions to be used in class
 def word(l, h):
     """
-	Given a low and high bit, converts the number back into a word.
-	"""
+    Given a low and high bit, converts the number back into a word.
+    """
     return (h << 8) + l
 
 
